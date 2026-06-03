@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: antigravity_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: antigravity
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d antigravity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: antigravity_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:password@db:5432/antigravity
+      - JWT_SECRET=supersecretjwtkey_replace_in_prod
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend-web:
+    build:
+      context: ./frontend-web
+      target: development
+    container_name: antigravity_frontend_web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend-web:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  pgdata:
