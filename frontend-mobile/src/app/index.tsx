@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
 // In a real app, you'd use a config or env var
-const API_URL = 'http://10.0.2.2:3001/api';
+const API_URL = 'http://10.184.183.46:3001/api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');

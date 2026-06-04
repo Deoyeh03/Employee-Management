@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { tenantQuery } from '../db';
 import { authenticateToken, AuthRequest, requireRole } from '../middleware/authMiddleware';
+import { getIO } from '../socket';
 
 const router = Router();
 router.use(authenticateToken);
@@ -26,6 +27,8 @@ router.post('/clock-in', async (req: AuthRequest, res) => {
       'INSERT INTO attendance (tenant_id, employee_id, clock_in) VALUES ($1, $2, CURRENT_TIMESTAMP) RETURNING id, clock_in',
       [tenantId, employeeId]
     );
+
+    getIO().emit('dashboard_update', { type: 'attendance_clock_in' });
 
     res.json(result.rows[0]);
   } catch (error) {

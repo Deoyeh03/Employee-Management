@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Users, BarChart3, LogOut, Settings, Calendar, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 
@@ -54,9 +54,9 @@ export default function DashboardLayout({
           <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-                <span className="text-indigo-400">A</span>
+                <span className="text-indigo-400">E</span>
               </span>
-              Antigravity
+              Employee Mgmt
             </h1>
             <button 
               className="ml-auto lg:hidden text-slate-400 hover:text-white"
@@ -117,8 +117,8 @@ export default function DashboardLayout({
 }
 
 function NavItem({ href, icon: Icon, label }: { href: string; icon: any; label: string }) {
-  // Simple active state check - in a real app use usePathname
-  const isActive = typeof window !== 'undefined' && window.location.pathname === href;
+  const pathname = usePathname();
+  const isActive = pathname === href;
   
   return (
     <Link 

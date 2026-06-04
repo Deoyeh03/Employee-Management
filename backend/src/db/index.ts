@@ -15,10 +15,14 @@ export const query = async (text: string, params?: any[]) => {
 export const tenantQuery = async (tenantId: string, text: string, params?: any[]) => {
   const client = await pool.connect();
   try {
-    // Set the tenant id for the session
+    await client.query('BEGIN');
     await client.query(`SET LOCAL app.current_tenant_id = '${tenantId}'`);
     const res = await client.query(text, params);
+    await client.query('COMMIT');
     return res;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
   } finally {
     client.release();
   }

@@ -75,6 +75,6 @@ CREATE POLICY audit_logs_tenant_isolation_policy ON audit_logs
 INSERT INTO tenants (id, name) VALUES ('11111111-1111-1111-1111-111111111111', 'Default Laundry Corp');
 
 -- Password is 'password123'
--- Hash generated via bcrypt: $2b$12$K.g/2aK8586wz3A6zL/WJOn4p6z/L915Qo6D8gGzG7l7H31B6r7f2
+-- Hash generated via bcrypt
 INSERT INTO employees (id, tenant_id, first_name, last_name, email, password_hash, role) 
-VALUES ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'Admin', 'User', 'admin@example.com', '$2b$12$K.g/2aK8586wz3A6zL/WJOn4p6z/L915Qo6D8gGzG7l7H31B6r7f2', 'Owner');
+VALUES ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'Admin', 'User', 'admin@example.com', '$2b$10$Rhsm.GldGIG1GSfnYvnM.OlQWUiY.sfBfU.8d24ec0CHRg5CUURXu', 'Owner');

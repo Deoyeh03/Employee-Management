@@ -1,3 +1,4 @@
 {
-    "snyk.advanced.autoSelectOrganization": true
+    "snyk.advanced.autoSelectOrganization": true,
+    "avdmanager.sdkPath": "c:\\Users\\oniti\\OneDrive\\Desktop\\Employee Management\\frontend-web"
 }

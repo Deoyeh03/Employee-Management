@@ -44,7 +44,7 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center p-4">
       <div className="absolute top-10 left-10 flex items-center gap-2">
         <Sparkles className="w-6 h-6 text-indigo-400" />
-        <h1 className="text-2xl font-bold tracking-tight text-white">Antigravity</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Employee Management</h1>
       </div>
       
       <div className="w-full max-w-md animate-slide-up">

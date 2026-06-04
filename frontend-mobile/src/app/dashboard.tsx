@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-const API_URL = 'http://10.0.2.2:3001/api';
+const API_URL = 'http://10.184.183.46:3001/api';
 
 export default function DashboardScreen() {
   const [user, setUser] = useState<any>(null);

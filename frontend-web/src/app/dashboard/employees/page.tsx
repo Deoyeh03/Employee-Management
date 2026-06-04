@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { Plus, UserPlus, X, Loader2, MoreVertical, Edit2, ShieldAlert } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MoreVertical, Search, Plus, X, User, Mail, Shield, Check, Edit2, UserPlus, Loader2, ShieldAlert } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setOpenMenuId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const fetchEmployees = async () => {
     try {
@@ -27,7 +36,39 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     fetchEmployees();
+
+    // Setup Socket.io connection
+    const socket: Socket = io(process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001');
+
+    // Listen for backend broadcast events
+    socket.on('dashboard_update', () => {
+      fetchEmployees();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
+
+  const handleDeactivate = async (id: string, currentStatus: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/employees/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error('Failed to change status');
+      // Socket.io will automatically trigger a re-fetch
+    } catch (err) {
+      console.error(err);
+      alert('Error changing employee status');
+    }
+  };
 
   return (
     <div className="space-y-6 relative">
@@ -94,10 +135,39 @@ export default function EmployeesPage() {
                         {emp.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/10 transition-colors">
+                    <td className="px-6 py-4 text-right relative">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(openMenuId === emp.id ? null : emp.id);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/10 transition-colors"
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </button>
+                      
+                      {openMenuId === emp.id && (
+                        <div className="absolute right-6 top-10 w-36 bg-[#1e2128] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden animate-fade-in">
+                          <button 
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white text-left transition-colors"
+                            onClick={(e) => { e.stopPropagation(); alert(`Edit functionality for ${emp.first_name} coming soon!`); setOpenMenuId(null); }}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            Edit
+                          </button>
+                          <button 
+                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors ${emp.status === 'Active' ? 'text-red-400 hover:bg-red-500/10' : 'text-emerald-400 hover:bg-emerald-500/10'}`}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              handleDeactivate(emp.id, emp.status);
+                              setOpenMenuId(null); 
+                            }}
+                          >
+                            <X className="w-4 h-4" />
+                            {emp.status === 'Active' ? 'Deactivate' : 'Activate'}
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

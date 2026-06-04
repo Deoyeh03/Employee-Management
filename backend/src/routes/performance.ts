@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { tenantQuery } from '../db';
 import { authenticateToken, AuthRequest, requireRole } from '../middleware/authMiddleware';
+import { getIO } from '../socket';
 
 const router = Router();
 router.use(authenticateToken);
@@ -22,6 +23,7 @@ router.post('/log', async (req: AuthRequest, res) => {
       [tenantId, employeeId, itemsProcessed]
     );
 
+    getIO().emit('dashboard_update', { type: 'performance_logged' });
     res.json(result.rows[0]);
   } catch (error) {
     if (error instanceof z.ZodError) {

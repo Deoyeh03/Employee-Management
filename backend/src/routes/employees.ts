@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { tenantQuery } from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/authMiddleware';
+import { getIO } from '../socket';
 
 const router = Router();
 router.use(authenticateToken);
@@ -48,6 +49,8 @@ router.post('/', async (req: AuthRequest, res) => {
       [tenantId, req.user!.id, 'CREATE_EMPLOYEE', JSON.stringify({ created_employee_id: result.rows[0].id })]
     );
 
+    io.emit('dashboard_update', { type: 'employee_created' });
+
     res.status(201).json({ ...result.rows[0], initialPassword: randomPassword });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -83,6 +86,8 @@ router.put('/:id/status', async (req: AuthRequest, res) => {
       'INSERT INTO audit_logs (tenant_id, performed_by, action, details) VALUES ($1, $2, $3, $4)',
       [tenantId, req.user!.id, 'UPDATE_EMPLOYEE_STATUS', JSON.stringify({ target_employee_id: id, status })]
     );
+
+    getIO().emit('dashboard_update', { type: 'employee_status_changed' });
 
     res.json(result.rows[0]);
   } catch (error) {
