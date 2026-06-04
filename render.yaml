@@ -16,5 +16,4 @@ services:
 databases:
   - name: employee-management-db
     databaseName: antigravity
-    user: postgres
     plan: free
