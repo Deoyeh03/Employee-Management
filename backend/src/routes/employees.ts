@@ -49,7 +49,7 @@ router.post('/', async (req: AuthRequest, res) => {
       [tenantId, req.user!.id, 'CREATE_EMPLOYEE', JSON.stringify({ created_employee_id: result.rows[0].id })]
     );
 
-    io.emit('dashboard_update', { type: 'employee_created' });
+    getIO().emit('dashboard_update', { type: 'employee_created' });
 
     res.status(201).json({ ...result.rows[0], initialPassword: randomPassword });
   } catch (error) {
