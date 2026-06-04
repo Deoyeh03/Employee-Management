@@ -7,6 +7,16 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+# Development stage (used by docker-compose)
+FROM node:20-alpine AS development
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+# We'll mount the code via volume in docker-compose, so no need to COPY . .
+# We just need to start the dev server
+CMD ["npm", "run", "dev"]
+
 # Production stage
 FROM node:20-alpine AS production
 
@@ -25,13 +35,3 @@ USER nodeuser
 
 EXPOSE 3001
 CMD ["npm", "start"]
-
-# Development stage (used by docker-compose)
-FROM node:20-alpine AS development
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-# We'll mount the code via volume in docker-compose, so no need to COPY . .
-# We just need to start the dev server
-CMD ["npm", "run", "dev"]
