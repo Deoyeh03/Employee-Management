@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-// In a real app, you'd use a config or env var
-const API_URL = 'http://10.184.183.46:3001/api';
+// In production, set EXPO_PUBLIC_API_URL (e.g. https://your-backend.onrender.com/api)
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.184.183.46:3001/api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');

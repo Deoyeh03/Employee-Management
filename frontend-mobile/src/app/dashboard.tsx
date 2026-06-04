@@ -5,8 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { io, Socket } from 'socket.io-client';
 
-const API_URL = 'http://10.184.183.46:3001/api';
-const SOCKET_URL = 'http://10.184.183.46:3001';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.184.183.46:3001/api';
+const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL || 'http://10.184.183.46:3001';
 
 export default function DashboardScreen() {
   const [user, setUser] = useState<any>(null);
