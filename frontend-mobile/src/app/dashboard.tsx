@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Tex
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { io, Socket } from 'socket.io-client';
 
 const API_URL = 'http://10.184.183.46:3001/api';
+const SOCKET_URL = 'http://10.184.183.46:3001';
 
 export default function DashboardScreen() {
   const [user, setUser] = useState<any>(null);
@@ -12,12 +14,61 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(false);
   const [showLogModal, setShowLogModal] = useState(false);
   const [itemsProcessed, setItemsProcessed] = useState('');
+  const [shifts, setShifts] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
     loadUser();
-    // Ideally we would fetch attendance status here
+    fetchShifts();
+    checkClockStatus();
+
+    const socket: Socket = io(SOCKET_URL);
+    socket.on('dashboard_update', (event) => {
+      if (event.type === 'shifts_updated') {
+        fetchShifts();
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
+
+  const checkClockStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch(`${API_URL}/attendance/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClockedIn(data.clockedIn);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchShifts = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch(`${API_URL}/shifts/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) {
+        handleLogout();
+        return;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setShifts(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const loadUser = async () => {
     const userData = await AsyncStorage.getItem('user');
@@ -44,6 +95,12 @@ export default function DashboardScreen() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+      if (res.status === 401 || res.status === 403) {
+        Alert.alert('Session Expired', 'Your account is deactivated or deleted. Please log in again.');
+        handleLogout();
+        return;
+      }
       
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update attendance');
@@ -130,6 +187,34 @@ export default function DashboardScreen() {
               {clockedIn ? 'Clock Out' : 'Clock In Now'}
             </Text>
           </TouchableOpacity>
+        </View>
+
+        {/* My Schedule Section */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="calendar-outline" size={24} color="#f43f5e" />
+            <Text style={styles.cardTitle}>My Schedule</Text>
+          </View>
+          
+          {shifts.length === 0 ? (
+            <Text style={styles.statusText}>No shifts assigned to you yet.</Text>
+          ) : (
+            shifts.map(shift => (
+              <View key={shift.id} style={{ 
+                backgroundColor: 'rgba(255,255,255,0.05)', 
+                padding: 16, 
+                borderRadius: 12, 
+                marginBottom: 12,
+                borderLeftWidth: 4,
+                borderLeftColor: '#f43f5e'
+              }}>
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>{shift.type}</Text>
+                <Text style={{ color: '#94a3b8', fontSize: 14, marginTop: 4 }}>
+                  {shift.day} • {shift.time}
+                </Text>
+              </View>
+            ))
+          )}
         </View>
 
         {/* Performance Log Section */}

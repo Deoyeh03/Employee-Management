@@ -50,7 +50,7 @@ export default function SchedulePage() {
 
     const socket: Socket = io(process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001');
     socket.on('dashboard_update', (event) => {
-      if (event.type === 'shift_created') fetchShifts();
+      if (event.type === 'shifts_updated') fetchShifts();
       if (event.type === 'employee_created' || event.type === 'employee_status_changed') fetchEmployees();
     });
 

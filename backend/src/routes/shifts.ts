@@ -31,6 +31,25 @@ router.get('/', async (req: AuthRequest, res) => {
   }
 });
 
+router.get('/me', async (req: AuthRequest, res) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const employeeId = req.user!.id;
+    const result = await tenantQuery(
+      tenantId,
+      `SELECT id, type, day, time, created_at
+       FROM shifts 
+       WHERE employee_id = $1 
+       ORDER BY created_at DESC`,
+      [employeeId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.post('/', requireRole(['Manager', 'Owner']), async (req: AuthRequest, res) => {
   try {
     const tenantId = req.user!.tenantId;

@@ -11,6 +11,15 @@ router.post('/clock-in', async (req: AuthRequest, res) => {
     const tenantId = req.user!.tenantId;
     const employeeId = req.user!.id;
 
+    // Check if employee exists and is active
+    const employeeCheck = await tenantQuery(tenantId, 'SELECT status FROM employees WHERE id = $1', [employeeId]);
+    if (employeeCheck.rows.length === 0) {
+      return res.status(401).json({ error: 'User not found. Please log out.' });
+    }
+    if (employeeCheck.rows[0].status !== 'Active') {
+      return res.status(403).json({ error: 'Account deactivated' });
+    }
+
     // Check if already clocked in today
     const existing = await tenantQuery(
       tenantId,

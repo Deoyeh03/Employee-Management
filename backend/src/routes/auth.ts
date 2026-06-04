@@ -28,7 +28,7 @@ router.post('/login', async (req, res) => {
     }
 
     if (user.status !== 'Active') {
-      return res.status(403).json({ error: 'Account is not active' });
+      return res.status(403).json({ error: 'Account deactivated' });
     }
 
     const token = jwt.sign(

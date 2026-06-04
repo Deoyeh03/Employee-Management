@@ -86,13 +86,13 @@ export default function EmployeesPage() {
         </button>
       </div>
 
-      <div className="glass-panel overflow-hidden">
+      <div className="glass-panel">
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="w-full">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-400 uppercase bg-white/5">
                 <tr>
@@ -102,9 +102,9 @@ export default function EmployeesPage() {
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-white/5 pb-20">
                 {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={emp.id} className={`hover:bg-white/5 transition-colors ${openMenuId === emp.id ? 'relative z-20' : ''}`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-sm font-bold text-white">
@@ -135,39 +135,38 @@ export default function EmployeesPage() {
                         {emp.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right relative">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuId(openMenuId === emp.id ? null : emp.id);
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/10 transition-colors"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                      
-                      {openMenuId === emp.id && (
-                        <div className="absolute right-6 top-10 w-36 bg-[#1e2128] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden animate-fade-in">
-                          <button 
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white text-left transition-colors"
-                            onClick={(e) => { e.stopPropagation(); alert(`Edit functionality for ${emp.first_name} coming soon!`); setOpenMenuId(null); }}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                            Edit
-                          </button>
-                          <button 
-                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors ${emp.status === 'Active' ? 'text-red-400 hover:bg-red-500/10' : 'text-emerald-400 hover:bg-emerald-500/10'}`}
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              handleDeactivate(emp.id, emp.status);
-                              setOpenMenuId(null); 
-                            }}
-                          >
-                            <X className="w-4 h-4" />
-                            {emp.status === 'Active' ? 'Deactivate' : 'Activate'}
-                          </button>
-                        </div>
-                      )}
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          disabled={emp.status === 'Active'}
+                          className={`px-3 py-1.5 text-xs font-bold border rounded-md transition-colors ${
+                            emp.status === 'Active' 
+                              ? 'bg-slate-500/10 border-slate-500/20 text-slate-500 cursor-not-allowed opacity-50' 
+                              : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+                          }`}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleDeactivate(emp.id, 'Suspended'); // Sets to Active
+                          }}
+                        >
+                          Activate
+                        </button>
+
+                        <button 
+                          disabled={emp.status === 'Suspended'}
+                          className={`px-3 py-1.5 text-xs font-bold border rounded-md transition-colors ${
+                            emp.status === 'Suspended' 
+                              ? 'bg-slate-500/10 border-slate-500/20 text-slate-500 cursor-not-allowed opacity-50' 
+                              : 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20'
+                          }`}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleDeactivate(emp.id, 'Active'); // Sets to Suspended
+                          }}
+                        >
+                          Deactivate
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

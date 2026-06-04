@@ -13,15 +13,15 @@ router.get('/', authenticateToken, async (req, res) => {
     const totalItemsRes = await query(`
       SELECT SUM(items_processed) as total 
       FROM performance_logs 
-      WHERE tenant_id = $1 AND DATE(timestamp) = CURRENT_DATE
+      WHERE tenant_id = $1 AND DATE(log_date) = CURRENT_DATE
     `, [tenantId]);
     const totalItems = parseInt(totalItemsRes.rows[0].total || '0', 10);
 
-    // 2. Active Workers Count
+    // 2. Active Workers Count (Currently Clocked In)
     const activeWorkersRes = await query(`
-      SELECT COUNT(*) as count 
-      FROM employees 
-      WHERE tenant_id = $1 AND status = 'Active' AND role IN ('Worker', 'Manager')
+      SELECT COUNT(DISTINCT employee_id) as count 
+      FROM attendance 
+      WHERE tenant_id = $1 AND DATE(clock_in) = CURRENT_DATE AND clock_out IS NULL
     `, [tenantId]);
     const activeWorkers = parseInt(activeWorkersRes.rows[0].count || '0', 10);
 
@@ -34,10 +34,10 @@ router.get('/', authenticateToken, async (req, res) => {
         WHERE tenant_id = $1 AND DATE(clock_in) = CURRENT_DATE
         GROUP BY employee_id
       )
-      SELECT AVG(EXTRACT(EPOCH FROM (p.timestamp - r.latest_clock_in))) as avg_seconds
+      SELECT AVG(EXTRACT(EPOCH FROM (p.log_date - r.latest_clock_in))) as avg_seconds
       FROM performance_logs p
       JOIN recent_clock_ins r ON p.employee_id = r.employee_id
-      WHERE p.tenant_id = $1 AND DATE(p.timestamp) = CURRENT_DATE AND p.timestamp >= r.latest_clock_in
+      WHERE p.tenant_id = $1 AND DATE(p.log_date) = CURRENT_DATE AND p.log_date >= r.latest_clock_in
     `, [tenantId]);
     
     let avgProcessingTime = '0m 0s';
@@ -53,7 +53,7 @@ router.get('/', authenticateToken, async (req, res) => {
       SELECT e.first_name, e.last_name, e.role, SUM(p.items_processed) as total_items
       FROM performance_logs p
       JOIN employees e ON p.employee_id = e.id
-      WHERE p.tenant_id = $1 AND DATE(p.timestamp) = CURRENT_DATE
+      WHERE p.tenant_id = $1 AND DATE(p.log_date) = CURRENT_DATE
       GROUP BY e.id, e.first_name, e.last_name, e.role
       ORDER BY total_items DESC
       LIMIT 3

@@ -1,7 +1,7 @@
 // Using native fetch
 
 const API_URL = 'http://127.0.0.1:3001/api';
-const ADMIN_EMAIL = 'admin@example.com';
+const ADMIN_EMAIL = 'admin@gmail.com';
 const ADMIN_PASS = 'password123';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
